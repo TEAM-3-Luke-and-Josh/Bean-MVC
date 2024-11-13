@@ -1,0 +1,110 @@
+﻿@* Views/Home/Index.cshtml *@
+@{
+    ViewData["Title"] = "Welcome to Bean Scene";
+}
+
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>Welcome to Bean Scene</h1>
+        <p class="lead">Experience Melbourne's finest dining atmosphere</p>
+        <a asp-controller="Reservation" asp-action="Create" class="btn btn-primary btn-lg">Make a Reservation</a>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="icon-circle">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3>Fine Dining</h3>
+                <p>Experience our carefully crafted menu featuring local ingredients and seasonal specialties.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="icon-circle">
+                    <i class="fas fa-coffee"></i>
+                </div>
+                <h3>Premium Coffee</h3>
+                <p>Savor our signature coffee blends, expertly roasted and prepared by our skilled baristas.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="icon-circle">
+                    <i class="fas fa-glass-cheers"></i>
+                </div>
+                <h3>Special Events</h3>
+                <p>Host your next celebration in our elegant private dining spaces.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="menu-preview-section">
+    <h2>Our Menus</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="menu-card">
+                <h3>Breakfast</h3>
+                <p class="time">7:00 AM - 10:30 AM</p>
+                <div class="menu-items">
+                    <p>Full Breakfast</p>
+                    <p>Eggs Benedict</p>
+                    <p>Pancake Stack</p>
+                </div>
+                <a href="#" class="btn btn-outline-primary">View Menu</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="menu-card">
+                <h3>Lunch</h3>
+                <p class="time">11:30 AM - 2:30 PM</p>
+                <div class="menu-items">
+                    <p>Gourmet Burgers</p>
+                    <p>Fresh Salads</p>
+                    <p>Pasta Selection</p>
+                </div>
+                <a href="#" class="btn btn-outline-primary">View Menu</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="menu-card">
+                <h3>Dinner</h3>
+                <p class="time">5:30 PM - 9:30 PM</p>
+                <div class="menu-items">
+                    <p>Premium Steaks</p>
+                    <p>Fresh Seafood</p>
+                    <p>Chef's Specials</p>
+                </div>
+                <a href="#" class="btn btn-outline-primary">View Menu</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="location-section">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="contact-info">
+                <h2>Visit Us</h2>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Coffee Lane, Melbourne VIC 3000</p>
+                <p><i class="fas fa-phone"></i> (03) 9123 4567</p>
+                <p><i class="fas fa-envelope"></i> info@beanscene.com.au</p>
+                <div class="opening-hours">
+                    <h3>Opening Hours</h3>
+                    <p>Monday - Friday: 7:00 AM - 10:00 PM</p>
+                    <p>Saturday - Sunday: 8:00 AM - 11:00 PM</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="map-placeholder">
+                <!-- Replace with actual map integration -->
+                <div class="mock-map">Map Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>

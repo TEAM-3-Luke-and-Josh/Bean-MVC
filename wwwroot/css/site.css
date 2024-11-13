@@ -1,0 +1,308 @@
+/* wwwroot/css/site.css */
+:root {
+  --rich-mocha: #5D3A00;
+  --golden-honey: #E3B23C;
+  --mint-green: #A3D9B1;
+  --soft-coral: #F28C8C;
+  --light-sand: #F9F3E5;
+  --white: #FFF;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--light-sand);
+}
+
+/* Navigation Styling */
+.navbar {
+  background-color: var(--soft-coral) !important;
+  padding: 1rem 2rem;
+}
+
+.navbar-brand {
+  color: var(--white) !important;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.nav-link {
+  color: var(--white) !important;
+  font-weight: 500;
+}
+
+/* Main Content Area */
+.container {
+  padding: 2rem;
+}
+
+/* Card Styling */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  background-color: var(--mint-green);
+  border-radius: 10px 10px 0 0 !important;
+  color: var(--rich-mocha);
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+}
+
+/* Button Styling */
+.btn-primary {
+  background-color: var(--golden-honey);
+  border-color: var(--golden-honey);
+  color: var(--rich-mocha);
+  font-weight: 500;
+  padding: 0.5rem 2rem;
+  border-radius: 25px;
+}
+
+.btn-primary:hover {
+  background-color: #d4a535;
+  border-color: #d4a535;
+  color: var(--rich-mocha);
+}
+
+.btn-secondary {
+  background-color: var(--mint-green);
+  border-color: var(--mint-green);
+  color: var(--rich-mocha);
+  font-weight: 500;
+  padding: 0.5rem 2rem;
+  border-radius: 25px;
+}
+
+/* Form Styling */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.form-control:focus {
+  border-color: var(--golden-honey);
+  box-shadow: 0 0 0 0.2rem rgba(227, 178, 60, 0.25);
+}
+
+/* Progress Bar */
+.progress {
+  height: 0.8rem;
+  background-color: #e9ecef;
+  border-radius: 1rem;
+  margin: 1.5rem 0;
+}
+
+.progress-bar {
+  background-color: var(--golden-honey);
+  border-radius: 1rem;
+}
+
+/* Table Styling */
+.table {
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: var(--mint-green);
+  color: var(--rich-mocha);
+  font-weight: 600;
+  border: none;
+}
+
+.table td {
+  border-color: #eee;
+  vertical-align: middle;
+}
+
+/* Header Styling */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--rich-mocha);
+  font-weight: 600;
+}
+
+/* Status Labels */
+.status-label {
+  padding: 0.35rem 1rem;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-pending {
+  background-color: var(--light-sand);
+  color: var(--rich-mocha);
+}
+
+.status-confirmed {
+  background-color: var(--mint-green);
+  color: var(--rich-mocha);
+}
+
+.status-cancelled {
+  background-color: var(--soft-coral);
+  color: white;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(rgba(93, 58, 0, 0.7), rgba(93, 58, 0, 0.7)),
+              url('/images/cafe-hero.jpg') center/cover;
+  height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  margin-bottom: 4rem;
+  margin-top: -1rem;
+}
+
+.hero-content {
+  padding: 2rem;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.hero-content .lead {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Features Section */
+.features-section {
+  padding: 4rem 0;
+  background-color: var(--light-sand);
+}
+
+.feature-card {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 15px;
+  margin-bottom: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  background-color: var(--mint-green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.icon-circle i {
+  font-size: 2rem;
+  color: var(--white);
+}
+
+/* Menu Preview Section */
+.menu-preview-section {
+  padding: 4rem 0;
+}
+
+.menu-preview-section h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.menu-card {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu-card h3 {
+  color: var(--rich-mocha);
+  margin-bottom: 0.5rem;
+}
+
+.menu-card .time {
+  color: var(--golden-honey);
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.menu-items {
+  margin: 1.5rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.menu-items p {
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+/* Location Section */
+.location-section {
+  padding: 4rem 0;
+  background-color: var(--light-sand);
+}
+
+.contact-info {
+  padding: 2rem;
+}
+
+.contact-info i {
+  color: var(--golden-honey);
+  margin-right: 0.5rem;
+  width: 20px;
+}
+
+.opening-hours {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #ddd;
+}
+
+.map-placeholder {
+  height: 400px;
+  background-color: #eee;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.mock-map {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ddd;
+  color: #666;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .hero-content h1 {
+      font-size: 2.5rem;
+  }
+  
+  .hero-section {
+      height: 400px;
+  }
+}

@@ -1,0 +1,77 @@
+@using System.Security.Claims
+
+<div class="navbar-nav ms-auto">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        var userRole = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+        <div class="nav-item dropdown">
+            <a class="btn btn-success dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle"></i> @User.Identity.Name (@userRole)
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                @switch (userRole)
+                {
+                    case "Manager":
+                        <li><a class="dropdown-item" href="@Url.Action("Dashboard", "Manager")">
+                            <i class="bi bi-speedometer2"></i> Manager Dashboard
+                        </a></li>
+                        break;
+                    case "Staff":
+                        <li><a class="dropdown-item" href="@Url.Action("Dashboard", "Staff")">
+                            <i class="bi bi-speedometer2"></i> Staff Dashboard
+                        </a></li>
+                        break;
+                    case "Member":
+                        <li><a class="dropdown-item" href="@Url.Action("Dashboard", "Member")">
+                            <i class="bi bi-person"></i> My Reservations
+                        </a></li>
+                        break;
+                }
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form id="logoutForm" class="form-inline" action="javascript:void(0);">
+                        <button type="submit" class="dropdown-item text-danger">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    }
+    else
+    {
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+        </button>
+    }
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Login to Bean Scene</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="loginAlert" class="alert alert-danger d-none"></div>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
