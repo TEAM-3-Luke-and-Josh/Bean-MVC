@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using BeanScene.Data;
 using BeanScene.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace BeanScene.Controllers
 {
@@ -51,7 +52,19 @@ namespace BeanScene.Controllers
                 var reservations = await _context.Reservations
                     .Include(r => r.Guest)
                     .Include(r => r.Sitting)
+                    .Include(r => r.Tables) 
                     .Where(r => r.StartTime >= startOfDay && r.StartTime <= endOfDay)
+                    .Select(r => new
+                    {
+                        id = r.ReservationID,
+                        start = r.StartTime,
+                        name = $"{r.Guest.FirstName} {r.Guest.LastName}".Trim(),
+                        phone = r.Guest.PhoneNumber,
+                        sitting = r.Sitting.SittingType,
+                        numberOfGuests = r.NumberOfGuests,
+                        status = r.ReservationStatus,
+                        tables = r.Tables.Select(t => t.TableID).ToList()
+                    })
                     .ToListAsync();
 
                 if (!reservations.Any())
@@ -59,18 +72,7 @@ namespace BeanScene.Controllers
                     return NotFound(new { message = "No reservations found for this date" });
                 }
 
-                var transformedData = reservations.Select(r => new
-                {
-                    id = r.ReservationID,
-                    start = r.StartTime,
-                    name = $"{r.Guest.FirstName} {r.Guest.LastName}".Trim(),
-                    phone = r.Guest.PhoneNumber,
-                    sitting = r.Sitting.SittingType,
-                    numberOfGuests = r.NumberOfGuests,
-                    status = r.ReservationStatus
-                });
-
-                return Ok(transformedData);
+                return Ok(reservations);
             }
             catch (Exception ex)
             {
@@ -139,6 +141,8 @@ namespace BeanScene.Controllers
         {
             try
             {
+                _logger.LogInformation($"Updating reservation {id} with data: {JsonSerializer.Serialize(dto)}");
+                
                 var reservation = await _context.Reservations
                     .Include(r => r.Guest)
                     .FirstOrDefaultAsync(r => r.ReservationID == id);
@@ -185,12 +189,26 @@ namespace BeanScene.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new { message = "Reservation updated successfully", reservation });
+                return Ok(new { message = "Reservation updated successfully", reservation = new ReservationResponseDto {
+                    ReservationID = reservation.ReservationID,
+                    StartTime = reservation.StartTime,
+                    EndTime = reservation.EndTime,
+                    NumberOfGuests = reservation.NumberOfGuests,
+                    ReservationStatus = reservation.ReservationStatus,
+                    Notes = reservation.Notes!,
+                    Guest = new GuestDto
+                    {
+                        FirstName = reservation.Guest!.FirstName,
+                        LastName = reservation.Guest.LastName,
+                        PhoneNumber = reservation.Guest.PhoneNumber,
+                        Email = reservation.Guest.Email
+                    }
+                }});
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating reservation");
-                return StatusCode(500, new { message = "Error updating reservation", error = ex.Message });
+                _logger.LogError(ex, $"Error updating reservation {id}");
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
@@ -260,5 +278,24 @@ namespace BeanScene.Controllers
         public string PhoneNumber { get; set; } = default!;
         public string Email { get; set; } = default!;
         public string Notes { get; set; } = default!;
+    }
+
+    public class ReservationResponseDto
+    {
+        public int ReservationID { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public int NumberOfGuests { get; set; }
+        public string ReservationStatus { get; set; } = default!;
+        public string Notes { get; set; } = default!;
+        public GuestDto Guest { get; set; } = default!;
+    }
+
+    public class GuestDto
+    {
+        public string FirstName { get; set; } = default!;
+        public string LastName { get; set; } = default!;
+        public string PhoneNumber { get; set; } = default!;
+        public string Email { get; set; } = default!;
     }
 }
