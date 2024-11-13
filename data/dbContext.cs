@@ -68,6 +68,11 @@ namespace BeanScene.Data
                 .WithMany(s => s.Reservations)
                 .HasForeignKey(r => r.SittingID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Reservation>()
+                .HasMany(r => r.Tables)
+                .WithMany(t => t.Reservations)
+                .UsingEntity(j => j.ToTable("ReservationTables"));
         }
     }
 }

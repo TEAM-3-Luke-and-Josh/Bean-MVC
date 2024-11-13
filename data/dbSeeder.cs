@@ -213,11 +213,16 @@ namespace BeanScene.Data
                 if (_random.Next(100) < 30) continue;
 
                 var numReservations = _random.Next(2, 6); // 2-5 reservations per sitting
+                
+                // Get all tables for random assignment
+                var availableTables = tables.ToList();
+                
                 for (int i = 0; i < numReservations; i++)
                 {
                     var guest = guests[_random.Next(guests.Count)];
                     var startTime = sitting.StartTime.AddMinutes(_random.Next(0, (int)(sitting.EndTime - sitting.StartTime).TotalMinutes - 90));
                     var status = reservationStatuses[_random.Next(reservationStatuses.Length)];
+                    var numberOfGuests = _random.Next(1, 9);
 
                     // If the sitting is in the past, make sure status is either Completed or Cancelled
                     if (sitting.StartTime < DateTime.Now)
@@ -225,16 +230,43 @@ namespace BeanScene.Data
                         status = _random.Next(100) < 90 ? "Completed" : "Cancelled";
                     }
 
-                    reservations.Add(new Reservation
+                    // Assign appropriate tables based on party size
+                    var assignedTables = new List<Table>();
+                    int remainingCapacity = numberOfGuests;
+                    while (remainingCapacity > 0 && availableTables.Any())
+                    {
+                        // Find suitable tables (with capacity close to remaining guests)
+                        var suitableTables = availableTables
+                            .Where(t => t.Capacity <= remainingCapacity + 2) // Allow some overflow
+                            .OrderBy(t => Math.Abs(t.Capacity - remainingCapacity))
+                            .ToList();
+
+                        if (!suitableTables.Any())
+                        {
+                            // If no suitable tables, just take the smallest available
+                            suitableTables = availableTables
+                                .OrderBy(t => t.Capacity)
+                                .ToList();
+                        }
+
+                        var selectedTable = suitableTables.First();
+                        assignedTables.Add(selectedTable);
+                        remainingCapacity -= selectedTable.Capacity;
+                    }
+
+                    var reservation = new Reservation
                     {
                         GuestID = guest.GuestID,
                         SittingID = sitting.SittingID,
                         StartTime = startTime,
                         EndTime = startTime.AddMinutes(90),
-                        NumberOfGuests = _random.Next(1, 9),
+                        NumberOfGuests = numberOfGuests,
                         ReservationStatus = status,
-                        Notes = specialRequests[_random.Next(specialRequests.Length)]
-                    });
+                        Notes = specialRequests[_random.Next(specialRequests.Length)],
+                        Tables = assignedTables  // Assign the tables to the reservation
+                    };
+
+                    reservations.Add(reservation);
                 }
             }
 

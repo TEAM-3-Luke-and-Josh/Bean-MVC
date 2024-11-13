@@ -35,5 +35,6 @@ namespace BeanScene.Models {
         // Navigation properties
         public Guest Guest { get; set; } = default!;
         public Sitting Sitting { get; set; } = default!;
+        public ICollection<Table> Tables { get; set; } = new List<Table>();
     }
 }
