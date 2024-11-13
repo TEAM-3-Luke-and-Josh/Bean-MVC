@@ -46,7 +46,9 @@ namespace BeanScene.Controllers
         {
             try
             {
-                var startOfDay = date.Date;
+                var sydneyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Sydney");
+                var sydneyDate = TimeZoneInfo.ConvertTimeFromUtc(date.ToUniversalTime(), sydneyTimeZone);
+                var startOfDay = sydneyDate.Date;
                 var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
                 var reservations = await _context.Reservations
@@ -155,8 +157,13 @@ namespace BeanScene.Controllers
                 // Update reservation details
                 if (dto.StartTime != default)
                 {
-                    reservation.StartTime = dto.StartTime;
-                    reservation.EndTime = dto.StartTime.AddMinutes(90); // Maintain 90-minute duration
+                    var sydneyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Sydney");
+                    var sydneyTime = DateTime.SpecifyKind(dto.StartTime, DateTimeKind.Utc);
+                    
+                    reservation.StartTime = sydneyTime;
+                    reservation.EndTime = sydneyTime.AddMinutes(90);
+                    
+                    _logger.LogInformation($"Updated time: Original={dto.StartTime}, Sydney={sydneyTime}");
                 }
                 
                 if (dto.NumberOfGuests > 0)
