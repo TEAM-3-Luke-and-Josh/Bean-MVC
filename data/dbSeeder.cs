@@ -12,11 +12,15 @@ namespace BeanScene.Data
             // Apply any pending migrations
             context.Database.Migrate();
 
-            // Clear all existing data
+            // Clear previous data
             ClearDatabase(context);
 
-            // Seed the database
-            SeedDatabase(context);
+            // Seed reservations
+            SeedReservations(context);
+
+            // Seed menu items
+            SeedMenuData(context);
+
         }
 
         private static void ClearDatabase(BeanSceneContext context)
@@ -31,7 +35,7 @@ namespace BeanScene.Data
             context.SaveChanges();
         }
 
-        public static void SeedDatabase(BeanSceneContext context)
+        public static void SeedReservations(BeanSceneContext context)
         {
 
             // 1. Seed Users (Manager, Staff, and Members)
@@ -272,6 +276,235 @@ namespace BeanScene.Data
 
             context.Reservations.AddRange(reservations);
             context.SaveChanges();
+        }
+
+        public static void SeedMenuData(BeanSceneContext context)
+        {
+            // Skip if menu data already exists
+            if (context.MenuCategories.Any()) return;
+
+            try
+            {
+                // 1. Create Categories
+                var categories = new List<MenuCategory>
+                {
+                    new MenuCategory { Name = "Breakfast", Description = "Start your day right" },
+                    new MenuCategory { Name = "Lunch Mains", Description = "Midday favorites" },
+                    new MenuCategory { Name = "Dinner Mains", Description = "Evening specialties" },
+                    new MenuCategory { Name = "Sides", Description = "Perfect accompaniments" },
+                    new MenuCategory { Name = "Beverages", Description = "Drinks selection" },
+                    new MenuCategory { Name = "Desserts", Description = "Sweet endings" }
+                };
+
+                context.MenuCategories.AddRange(categories);
+                context.SaveChanges();
+
+                // 2. Create Menu Items (without options first)
+                var breakfastItems = new List<MenuItem>
+                {
+                    new MenuItem
+                    {
+                        CategoryID = categories[0].CategoryID,
+                        Name = "Eggs Benedict",
+                        Description = "Poached eggs, ham, hollandaise on English muffin",
+                        Price = 22.00M,
+                        PrepTime = 15
+                    },
+                    new MenuItem
+                    {
+                        CategoryID = categories[0].CategoryID,
+                        Name = "Avocado Toast",
+                        Description = "Smashed avocado, feta, cherry tomatoes on sourdough",
+                        Price = 18.00M,
+                        PrepTime = 10
+                    }
+                };
+
+                var lunchItems = new List<MenuItem>
+                {
+                    new MenuItem
+                    {
+                        CategoryID = categories[1].CategoryID,
+                        Name = "Beef Burger",
+                        Description = "House-made beef patty, lettuce, tomato, cheese, special sauce",
+                        Price = 24.00M,
+                        PrepTime = 20
+                    },
+                    new MenuItem
+                    {
+                        CategoryID = categories[1].CategoryID,
+                        Name = "Caesar Salad",
+                        Description = "Cos lettuce, croutons, parmesan, bacon, Caesar dressing",
+                        Price = 19.00M,
+                        PrepTime = 12
+                    }
+                };
+
+                var dinnerItems = new List<MenuItem>
+                {
+                    new MenuItem
+                    {
+                        CategoryID = categories[2].CategoryID,
+                        Name = "Grilled Ribeye Steak",
+                        Description = "300g ribeye, herb butter, red wine jus",
+                        Price = 42.00M,
+                        PrepTime = 25
+                    },
+                    new MenuItem
+                    {
+                        CategoryID = categories[2].CategoryID,
+                        Name = "Pan-Seared Salmon",
+                        Description = "Atlantic salmon, crushed potatoes, broccolini, lemon butter",
+                        Price = 36.00M,
+                        PrepTime = 20
+                    }
+                };
+
+                var sides = new List<MenuItem>
+                {
+                    new MenuItem
+                    {
+                        CategoryID = categories[3].CategoryID,
+                        Name = "Sweet Potato Fries",
+                        Description = "Served with aioli",
+                        Price = 9.00M,
+                        PrepTime = 10
+                    },
+                    new MenuItem
+                    {
+                        CategoryID = categories[3].CategoryID,
+                        Name = "Garden Salad",
+                        Description = "Mixed leaves, cherry tomatoes, cucumber, house dressing",
+                        Price = 8.00M,
+                        PrepTime = 5
+                    }
+                };
+
+                var beverages = new List<MenuItem>
+                {
+                    new MenuItem
+                    {
+                        CategoryID = categories[4].CategoryID,
+                        Name = "Fresh Orange Juice",
+                        Description = "Freshly squeezed oranges",
+                        Price = 6.00M,
+                        PrepTime = 5
+                    },
+                    new MenuItem
+                    {
+                        CategoryID = categories[4].CategoryID,
+                        Name = "Flat White",
+                        Description = "Double shot coffee with steamed milk",
+                        Price = 4.50M,
+                        PrepTime = 5
+                    }
+                };
+
+                var desserts = new List<MenuItem>
+                {
+                    new MenuItem
+                    {
+                        CategoryID = categories[5].CategoryID,
+                        Name = "Sticky Date Pudding",
+                        Description = "Butterscotch sauce, vanilla ice cream",
+                        Price = 14.00M,
+                        PrepTime = 15
+                    },
+                    new MenuItem
+                    {
+                        CategoryID = categories[5].CategoryID,
+                        Name = "Chocolate Fondant",
+                        Description = "Warm chocolate cake, liquid center, vanilla ice cream",
+                        Price = 16.00M,
+                        PrepTime = 20
+                    }
+                };
+
+                // Add all menu items
+                var allItems = new List<MenuItem>();
+                allItems.AddRange(breakfastItems);
+                allItems.AddRange(lunchItems);
+                allItems.AddRange(dinnerItems);
+                allItems.AddRange(sides);
+                allItems.AddRange(beverages);
+                allItems.AddRange(desserts);
+
+                context.MenuItems.AddRange(allItems);
+                context.SaveChanges();
+
+                // 3. Add options to items
+                var itemOptions = new List<ItemOption>();
+
+                // Eggs Benedict options
+                itemOptions.AddRange(new[]
+                {
+                    new ItemOption { ItemID = breakfastItems[0].ItemID, Name = "Extra Egg", PriceModifier = 3.00M },
+                    new ItemOption { ItemID = breakfastItems[0].ItemID, Name = "Smoked Salmon Instead of Ham", PriceModifier = 4.00M }
+                });
+
+                // Avocado Toast options
+                itemOptions.AddRange(new[]
+                {
+                    new ItemOption { ItemID = breakfastItems[1].ItemID, Name = "Add Poached Egg", PriceModifier = 3.00M },
+                    new ItemOption { ItemID = breakfastItems[1].ItemID, Name = "Add Bacon", PriceModifier = 4.00M }
+                });
+
+                // Burger options
+                itemOptions.AddRange(new[]
+                {
+                    new ItemOption { ItemID = lunchItems[0].ItemID, Name = "Extra Patty", PriceModifier = 6.00M },
+                    new ItemOption { ItemID = lunchItems[0].ItemID, Name = "Add Bacon", PriceModifier = 4.00M },
+                    new ItemOption { ItemID = lunchItems[0].ItemID, Name = "Gluten-Free Bun", PriceModifier = 2.00M }
+                });
+
+                // Flat White options
+                itemOptions.AddRange(new[]
+                {
+                    new ItemOption { ItemID = beverages[1].ItemID, Name = "Extra Shot", PriceModifier = 0.50M },
+                    new ItemOption { ItemID = beverages[1].ItemID, Name = "Soy Milk", PriceModifier = 0.50M },
+                    new ItemOption { ItemID = beverages[1].ItemID, Name = "Almond Milk", PriceModifier = 0.50M }
+                });
+
+                context.ItemOptions.AddRange(itemOptions);
+                context.SaveChanges();
+
+                // 4. Set menu availability
+                var menuAvailability = new List<MenuAvailability>();
+
+                // Breakfast items only available during breakfast
+                foreach (var item in breakfastItems)
+                {
+                    menuAvailability.Add(new MenuAvailability { ItemID = item.ItemID, SittingType = "Breakfast" });
+                }
+
+                // Lunch items available during lunch and dinner
+                foreach (var item in lunchItems)
+                {
+                    menuAvailability.Add(new MenuAvailability { ItemID = item.ItemID, SittingType = "Lunch" });
+                    menuAvailability.Add(new MenuAvailability { ItemID = item.ItemID, SittingType = "Dinner" });
+                }
+
+                // Dinner items only available during dinner
+                foreach (var item in dinnerItems)
+                {
+                    menuAvailability.Add(new MenuAvailability { ItemID = item.ItemID, SittingType = "Dinner" });
+                }
+
+                // Sides, beverages, and desserts available all day
+                foreach (var item in sides.Concat(beverages).Concat(desserts))
+                {
+                    menuAvailability.Add(new MenuAvailability { ItemID = item.ItemID, SittingType = "Breakfast" });
+                    menuAvailability.Add(new MenuAvailability { ItemID = item.ItemID, SittingType = "Lunch" });
+                    menuAvailability.Add(new MenuAvailability { ItemID = item.ItemID, SittingType = "Dinner" });
+                }
+
+                context.MenuAvailability.AddRange(menuAvailability);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error seeding menu data", ex);
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using BeanScene.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MVC_Full.Migrations
 {
     [DbContext(typeof(BeanSceneContext))]
-    partial class BeanSceneContextModelSnapshot : ModelSnapshot
+    [Migration("20241124002248_OrderingSystem")]
+    partial class OrderingSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -352,12 +355,7 @@ namespace MVC_Full.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("int");
 
-                    b.Property<int?>("OrderID")
-                        .HasColumnType("int");
-
                     b.HasKey("TableID");
-
-                    b.HasIndex("OrderID");
 
                     b.ToTable("Tables");
                 });
@@ -517,13 +515,6 @@ namespace MVC_Full.Migrations
                     b.Navigation("Sitting");
                 });
 
-            modelBuilder.Entity("BeanScene.Models.Table", b =>
-                {
-                    b.HasOne("BeanScene.Models.Order", null)
-                        .WithMany("AssignedTables")
-                        .HasForeignKey("OrderID");
-                });
-
             modelBuilder.Entity("ItemOptionOrderItem", b =>
                 {
                     b.HasOne("BeanScene.Models.OrderItem", null)
@@ -575,8 +566,6 @@ namespace MVC_Full.Migrations
 
             modelBuilder.Entity("BeanScene.Models.Order", b =>
                 {
-                    b.Navigation("AssignedTables");
-
                     b.Navigation("OrderItems");
                 });
 

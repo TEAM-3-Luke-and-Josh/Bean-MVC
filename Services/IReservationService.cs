@@ -6,8 +6,8 @@ namespace BeanScene.Services
     public interface IReservationService
     {
         SelectList GetAvailableSittings(DateTime? date = null);
-        Task<(bool Success, string Message, int ReservationId)> CreateReservationAsync(ReservationViewModel model);
-        Task<ReservationViewModel> GetReservationByIdAsync(int id);
+        // Task<(bool Success, string Message, int ReservationId)> CreateReservationAsync(ReservationViewModel model);
+        // Task<ReservationViewModel> GetReservationByIdAsync(int id);
         ReservationStepData GetStepData(int currentStep, DateTime? date = null);
     }
 
@@ -16,7 +16,7 @@ namespace BeanScene.Services
     {
         public int CurrentStep { get; set; }
         public int Progress { get; set; }
-        public SelectList AvailableSittings { get; set; }
-        public string SelectedSitting { get; set; }
+        public SelectList AvailableSittings { get; set; } = default!;
+        public string SelectedSitting { get; set; } = default!;
     }
 }

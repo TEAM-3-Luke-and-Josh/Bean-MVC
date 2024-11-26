@@ -33,21 +33,22 @@ namespace BeanScene.Controllers.Api
                 if (!response.Success)
                 {
                     _logger.LogWarning($"Login failed for user {loginDto.Username}");
-                    return BadRequest(new { message = response.Message });
+                    return BadRequest(response);
                 }
 
-                return Ok(new
-                {
-                    success = response.Success,
-                    token = response.Token,
-                    userType = response.UserType,
-                    username = response.Username
-                });
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during login");
-                return StatusCode(500, new { message = "Error during login", error = ex.Message });
+                return StatusCode(500, new AuthResponse
+                {
+                    Success = false,
+                    Message = "Error during login",
+                    Token = null!,
+                    UserType = null!,
+                    Username = null!
+                });
             }
         }
 
