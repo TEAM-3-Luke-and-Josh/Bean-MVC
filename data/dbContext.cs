@@ -9,15 +9,24 @@ namespace BeanScene.Data
             : base(options)
         { }
 
+        // RESERVATION SYSTEM
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Guest> Guests { get; set; }
         public DbSet<Sitting> Sittings { get; set; }
         public DbSet<Table> Tables { get; set; }
         public DbSet<User> Users { get; set; }
 
+        // ORDERING SYSTEM
+        public DbSet<MenuCategory> MenuCategories { get; set; }
+        public DbSet<MenuItem> MenuItems { get; set; }
+        public DbSet<ItemOption> ItemOptions { get; set; }
+        public DbSet<MenuAvailability> MenuAvailability { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configure enum-like string constraints
+            // RESERVATION SYSTEM
             modelBuilder.Entity<Reservation>()
                 .Property(r => r.ReservationStatus)
                 .HasConversion<string>()
@@ -39,7 +48,7 @@ namespace BeanScene.Data
                 .HasConversion<string>()
                 .HasMaxLength(50);
 
-            // Configure unique constraints
+            // Unique constraints
             modelBuilder.Entity<Guest>()
                 .HasIndex(g => g.Email)
                 .IsUnique();
@@ -56,7 +65,7 @@ namespace BeanScene.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            // Configure relationships
+            // Relationships
             modelBuilder.Entity<Reservation>()
                 .HasOne(r => r.Guest)
                 .WithMany(g => g.Reservations)
@@ -73,6 +82,58 @@ namespace BeanScene.Data
                 .HasMany(r => r.Tables)
                 .WithMany(t => t.Reservations)
                 .UsingEntity(j => j.ToTable("ReservationTables"));
+
+            // ORDERING SYSTEM
+            modelBuilder.Entity<MenuAvailability>()
+                .HasKey(ma => new { ma.ItemID, ma.SittingType });
+
+            // Configure relationship between OrderItem and ItemOption
+            modelBuilder.Entity<OrderItem>()
+                .HasMany(oi => oi.SelectedOptions)
+                .WithMany(io => io.OrderItems)
+                .UsingEntity(j => 
+                {
+                    j.ToTable("OrderItemOptions");
+                    j.Property<int>("OrderItemsOrderItemID");
+                    j.Property<int>("SelectedOptionsOptionID");
+                });
+
+            // Cascade delete behavior
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderItems)
+                .WithOne(oi => oi.Order)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MenuItem>()
+                .HasMany(mi => mi.Options)
+                .WithOne(io => io.MenuItem)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.MenuItem)
+                .WithMany(mi => mi.OrderItems)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Reservation)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Table)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Status fields
+            modelBuilder.Entity<Order>()
+                .Property(o => o.OrderStatus)
+                .HasConversion<string>()
+                .HasDefaultValue("Pending");
+
+            modelBuilder.Entity<OrderItem>()
+                .Property(oi => oi.ItemStatus)
+                .HasConversion<string>()
+                .HasDefaultValue("Pending");
         }
     }
 }

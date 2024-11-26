@@ -1,4 +1,3 @@
-// Services/ReservationService.cs
 using Microsoft.AspNetCore.Mvc.Rendering;
 using BeanScene.ViewModels;
 using BeanScene.Data;
@@ -21,7 +20,7 @@ namespace BeanScene.Services
                 CurrentStep = currentStep,
                 Progress = currentStep * 33, // 33% per step
                 AvailableSittings = GetAvailableSittings(date),
-                SelectedSitting = null // This can be populated if needed
+                SelectedSitting = default! // This can be populated if needed
             };
         }
 
@@ -48,18 +47,18 @@ namespace BeanScene.Services
             return new SelectList(sittings, "Id", "DisplayName");
         }
 
-        public async Task<(bool Success, string Message, int ReservationId)> CreateReservationAsync(ReservationViewModel model)
-        {
-            // Implement your reservation creation logic later
-            // For now, just return success
-            return (true, "Reservation created successfully", 1);
-        }
+        // public async Task<(bool Success, string Message, int ReservationId)> CreateReservationAsync(ReservationViewModel model)
+        // {
+        //     // Implement reservation creation logic later
+        //     // For now, just return success
+        //     return (true, "Reservation created successfully", 1);
+        // }
 
-        public async Task<ReservationViewModel> GetReservationByIdAsync(int id)
-        {
-            // Implement your reservation retrieval logic later
-            // For now, return null
-            return null;
-        }
+        // public async Task<ReservationViewModel> GetReservationByIdAsync(int id)
+        // {
+        //     // Implement reservation retrieval logic later
+        //     // For now, return null
+        //     return null;
+        // }
     }
 }
