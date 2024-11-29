@@ -4,6 +4,7 @@ using BeanScene.Data;
 using BeanScene.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using BeanScene.Controllers.Api;
 
 namespace BeanScene.Controllers
 {
@@ -89,11 +90,18 @@ namespace BeanScene.Controllers
         {
             try
             {
+                //Populate the sittingID based on StartTime.
+                var sitting = await _context.Sittings.FindAsync(dto.SittingID);
                 // Check if the sitting exists
-                var sitting = await _context.Sittings.FindAsync(dto.SittingId);
                 if (sitting == null)
                 {
-                    return NotFound(new { message = "Sitting not found" });
+                    return NotFound(new { message = "No Valid Sittings for Entered Start Time and Date" });
+                }
+                //Validate table
+                var table = await _context.Tables.FindAsync(dto.TableID);
+                if (table == null)
+                {
+                    return NotFound(new { message = "Table not found" });
                 }
 
                 // Find or create the guest
@@ -117,18 +125,38 @@ namespace BeanScene.Controllers
                 var reservation = new Reservation
                 {
                     GuestID = guest.GuestID,
-                    SittingID = sitting.SittingID,
+                    SittingID = dto.SittingID,
                     StartTime = dto.StartTime,
                     EndTime = dto.StartTime.AddMinutes(90), // Default 90-minute duration
                     NumberOfGuests = dto.NumberOfGuests,
                     ReservationStatus = "Pending",
                     Notes = dto.Notes
                 };
+                reservation.Tables.Add(table);
 
                 _context.Reservations.Add(reservation);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetReservations), new { id = reservation.ReservationID }, reservation);
+                //Map this reservation to ReservationResponseDto
+                var response = new ReservationResponseDto
+                {
+                    ReservationID = reservation.ReservationID,
+                    StartTime = reservation.StartTime,
+                    EndTime = reservation.EndTime,
+                    NumberOfGuests = reservation.NumberOfGuests,
+                    ReservationStatus = reservation.ReservationStatus,
+                    Notes = reservation.Notes!,
+                    SittingID = reservation.SittingID,
+                    Guest = new GuestDto
+                    {
+                        FirstName = dto.FirstName,
+                        LastName = dto.LastName,
+                        PhoneNumber = dto.PhoneNumber,
+                        Email = dto.Email,
+                    },
+                    TableIDs = reservation.Tables.Select(t => t.TableID).ToList()
+                };
+                return CreatedAtAction(nameof(GetReservations), new { id = reservation.ReservationID }, response);
             }
             catch (Exception ex)
             {
@@ -249,7 +277,7 @@ namespace BeanScene.Controllers
     public class ReservationCreateDto
     {
         [Required]
-        public int SittingId { get; set; }
+        public int SittingID { get; set; }
 
         [Required]
         public DateTime StartTime { get; set; }
@@ -273,11 +301,47 @@ namespace BeanScene.Controllers
         public string Email { get; set; } = default!;
 
         public string Notes { get; set; } = default!;
+        [Required]
+        public string TableID { get; set; } = default!;
+        //DO NOT WORRY ABOUT BELOW, WAS TRYING TO MAKE A FUNCTION TO UPDATE SITTING ID BASED ON DATE AND TIME PASSED FROM FRONTEND
+        ////New method that Should populate the SittingID based on the passed through time and date if it exists in the DB
+        //public async Task<int?> PopulateSittingIdAsync(DbContext context)
+        //{
+        //    try
+        //    {
+        //        //Logging the StartTime for debugging purposes (Was having issues with the SittingID being null
+        //        Console.WriteLine($"Populating SittingID for StartTime: {StartTime}");
+        //        //Query backend DB
+        //        var sitting = await context.Set<Sitting>()
+        //            .FirstOrDefaultAsync(s => s.StartTime <= StartTime &&
+        //                                      s.EndTime >= StartTime &&
+        //                                      !s.ClosedForReservations);
+
+        //        // Log the result of the sitting query
+        //        if (sitting != null)
+        //        {
+        //            Console.WriteLine($"Found SittingID: {sitting.SittingID}");
+        //            return sitting.SittingID;
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine("No valid sitting found.");
+        //            return null;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error in PopulateSittingIdAsync: {ex.Message}");
+        //        throw; // Re-throw the exception to propagate it to the controller
+        //    }
+        //}
     }
 
     public class ReservationUpdateDto
     {
+        public int ReservationID { get; set; }
         public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public int NumberOfGuests { get; set; }
         public string ReservationStatus { get; set; } = default!;
         public string FirstName { get; set; } = default!;
@@ -285,6 +349,8 @@ namespace BeanScene.Controllers
         public string PhoneNumber { get; set; } = default!;
         public string Email { get; set; } = default!;
         public string Notes { get; set; } = default!;
+        public int SittingID { get; set; }
+
     }
 
     public class ReservationResponseDto
@@ -296,6 +362,8 @@ namespace BeanScene.Controllers
         public string ReservationStatus { get; set; } = default!;
         public string Notes { get; set; } = default!;
         public GuestDto Guest { get; set; } = default!;
+        public int SittingID { get; set; }
+        public List<string> TableIDs { get; set; } = new();
     }
 
     public class GuestDto
