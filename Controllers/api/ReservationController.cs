@@ -30,6 +30,25 @@ namespace BeanScene.Controllers
                 var reservations = await _context.Reservations
                     .Include(r => r.Guest)
                     .Include(r => r.Sitting)
+                    .Select(r => new {
+                        r.ReservationID,
+                        r.StartTime,
+                        r.EndTime,
+                        r.NumberOfGuests,
+                        r.ReservationStatus,
+                        r.Notes,
+                        Guest = new {
+                            r.Guest.FirstName,
+                            r.Guest.LastName,
+                            r.Guest.PhoneNumber,
+                            r.Guest.Email
+                        },
+                        Sitting = new {
+                            r.Sitting.SittingID,
+                            r.Sitting.SittingType,
+                            r.Sitting.Capacity
+                        }
+                    })
                     .ToListAsync();
 
                 return Ok(reservations);
@@ -86,25 +105,12 @@ namespace BeanScene.Controllers
 
         // POST: api/reservations
         [HttpPost]
-        public async Task<ActionResult<Reservation>> CreateReservation([FromBody] ReservationCreateDto dto)
+        public async Task<ActionResult<ReservationResponseDto>> CreateReservation([FromBody] ReservationCreateDto dto)
         {
             try
             {
-                //Populate the sittingID based on StartTime.
-                var sitting = await _context.Sittings.FindAsync(dto.SittingID);
-                // Check if the sitting exists
-                if (sitting == null)
-                {
-                    return NotFound(new { message = "No Valid Sittings for Entered Start Time and Date" });
-                }
-                //Validate table
-                var table = await _context.Tables.FindAsync(dto.TableID);
-                if (table == null)
-                {
-                    return NotFound(new { message = "Table not found" });
-                }
-
-                // Find or create the guest
+                var sitting = await _context.Sittings.FindAsync(dto.SittingId);
+                if (sitting == null) return NotFound(new { message = "Sitting not found" });
                 var guest = await _context.Guests
                     .FirstOrDefaultAsync(g => g.PhoneNumber == dto.PhoneNumber);
 
@@ -121,13 +127,12 @@ namespace BeanScene.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // Create the reservation
                 var reservation = new Reservation
                 {
                     GuestID = guest.GuestID,
                     SittingID = dto.SittingID,
                     StartTime = dto.StartTime,
-                    EndTime = dto.StartTime.AddMinutes(90), // Default 90-minute duration
+                    EndTime = dto.StartTime.AddMinutes(90),
                     NumberOfGuests = dto.NumberOfGuests,
                     ReservationStatus = "Pending",
                     Notes = dto.Notes
@@ -137,7 +142,7 @@ namespace BeanScene.Controllers
                 _context.Reservations.Add(reservation);
                 await _context.SaveChangesAsync();
 
-                //Map this reservation to ReservationResponseDto
+                // Return a DTO instead of the entity
                 var response = new ReservationResponseDto
                 {
                     ReservationID = reservation.ReservationID,
@@ -145,17 +150,16 @@ namespace BeanScene.Controllers
                     EndTime = reservation.EndTime,
                     NumberOfGuests = reservation.NumberOfGuests,
                     ReservationStatus = reservation.ReservationStatus,
-                    Notes = reservation.Notes!,
-                    SittingID = reservation.SittingID,
+                    Notes = reservation.Notes,
                     Guest = new GuestDto
                     {
-                        FirstName = dto.FirstName,
-                        LastName = dto.LastName,
-                        PhoneNumber = dto.PhoneNumber,
-                        Email = dto.Email,
-                    },
-                    TableIDs = reservation.Tables.Select(t => t.TableID).ToList()
+                        FirstName = guest.FirstName,
+                        LastName = guest.LastName,
+                        PhoneNumber = guest.PhoneNumber,
+                        Email = guest.Email
+                    }
                 };
+
                 return CreatedAtAction(nameof(GetReservations), new { id = reservation.ReservationID }, response);
             }
             catch (Exception ex)
@@ -272,8 +276,6 @@ namespace BeanScene.Controllers
         }
     }
 
-
-
     public class ReservationCreateDto
     {
         [Required]
@@ -303,38 +305,6 @@ namespace BeanScene.Controllers
         public string Notes { get; set; } = default!;
         [Required]
         public string TableID { get; set; } = default!;
-        //DO NOT WORRY ABOUT BELOW, WAS TRYING TO MAKE A FUNCTION TO UPDATE SITTING ID BASED ON DATE AND TIME PASSED FROM FRONTEND
-        ////New method that Should populate the SittingID based on the passed through time and date if it exists in the DB
-        //public async Task<int?> PopulateSittingIdAsync(DbContext context)
-        //{
-        //    try
-        //    {
-        //        //Logging the StartTime for debugging purposes (Was having issues with the SittingID being null
-        //        Console.WriteLine($"Populating SittingID for StartTime: {StartTime}");
-        //        //Query backend DB
-        //        var sitting = await context.Set<Sitting>()
-        //            .FirstOrDefaultAsync(s => s.StartTime <= StartTime &&
-        //                                      s.EndTime >= StartTime &&
-        //                                      !s.ClosedForReservations);
-
-        //        // Log the result of the sitting query
-        //        if (sitting != null)
-        //        {
-        //            Console.WriteLine($"Found SittingID: {sitting.SittingID}");
-        //            return sitting.SittingID;
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine("No valid sitting found.");
-        //            return null;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Error in PopulateSittingIdAsync: {ex.Message}");
-        //        throw; // Re-throw the exception to propagate it to the controller
-        //    }
-        //}
     }
 
     public class ReservationUpdateDto
