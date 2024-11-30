@@ -29,6 +29,25 @@ namespace BeanScene.Controllers
                 var reservations = await _context.Reservations
                     .Include(r => r.Guest)
                     .Include(r => r.Sitting)
+                    .Select(r => new {
+                        r.ReservationID,
+                        r.StartTime,
+                        r.EndTime,
+                        r.NumberOfGuests,
+                        r.ReservationStatus,
+                        r.Notes,
+                        Guest = new {
+                            r.Guest.FirstName,
+                            r.Guest.LastName,
+                            r.Guest.PhoneNumber,
+                            r.Guest.Email
+                        },
+                        Sitting = new {
+                            r.Sitting.SittingID,
+                            r.Sitting.SittingType,
+                            r.Sitting.Capacity
+                        }
+                    })
                     .ToListAsync();
 
                 return Ok(reservations);
@@ -85,18 +104,13 @@ namespace BeanScene.Controllers
 
         // POST: api/reservations
         [HttpPost]
-        public async Task<ActionResult<Reservation>> CreateReservation([FromBody] ReservationCreateDto dto)
+        public async Task<ActionResult<ReservationResponseDto>> CreateReservation([FromBody] ReservationCreateDto dto)
         {
             try
             {
-                // Check if the sitting exists
                 var sitting = await _context.Sittings.FindAsync(dto.SittingId);
-                if (sitting == null)
-                {
-                    return NotFound(new { message = "Sitting not found" });
-                }
+                if (sitting == null) return NotFound(new { message = "Sitting not found" });
 
-                // Find or create the guest
                 var guest = await _context.Guests
                     .FirstOrDefaultAsync(g => g.PhoneNumber == dto.PhoneNumber);
 
@@ -113,13 +127,12 @@ namespace BeanScene.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // Create the reservation
                 var reservation = new Reservation
                 {
                     GuestID = guest.GuestID,
                     SittingID = sitting.SittingID,
                     StartTime = dto.StartTime,
-                    EndTime = dto.StartTime.AddMinutes(90), // Default 90-minute duration
+                    EndTime = dto.StartTime.AddMinutes(90),
                     NumberOfGuests = dto.NumberOfGuests,
                     ReservationStatus = "Pending",
                     Notes = dto.Notes
@@ -128,7 +141,25 @@ namespace BeanScene.Controllers
                 _context.Reservations.Add(reservation);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetReservations), new { id = reservation.ReservationID }, reservation);
+                // Return a DTO instead of the entity
+                var response = new ReservationResponseDto
+                {
+                    ReservationID = reservation.ReservationID,
+                    StartTime = reservation.StartTime,
+                    EndTime = reservation.EndTime,
+                    NumberOfGuests = reservation.NumberOfGuests,
+                    ReservationStatus = reservation.ReservationStatus,
+                    Notes = reservation.Notes,
+                    Guest = new GuestDto
+                    {
+                        FirstName = guest.FirstName,
+                        LastName = guest.LastName,
+                        PhoneNumber = guest.PhoneNumber,
+                        Email = guest.Email
+                    }
+                };
+
+                return CreatedAtAction(nameof(GetReservations), new { id = reservation.ReservationID }, response);
             }
             catch (Exception ex)
             {

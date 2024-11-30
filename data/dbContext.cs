@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using BeanScene.Models;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure; // Add this
 
 namespace BeanScene.Data
 {
@@ -27,27 +28,76 @@ namespace BeanScene.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // RESERVATION SYSTEM
+
+            modelBuilder.Entity<Sitting>()
+                .Property(s => s.StartTime)
+                .HasColumnType("datetime");
+
+            modelBuilder.Entity<Sitting>()
+                .Property(s => s.EndTime)
+                .HasColumnType("datetime");
+
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.StartTime)
+                .HasColumnType("datetime");
+
+            modelBuilder.Entity<Reservation>()
+                .Property(r => r.EndTime)
+                .HasColumnType("datetime");
+
+            // Add boolean configuration
+            modelBuilder.Entity<Sitting>()
+                .Property(s => s.ClosedForReservations)
+                .HasColumnType("tinyint(1)");
+                
+            // Update string column types for MariaDB
             modelBuilder.Entity<Reservation>()
                 .Property(r => r.ReservationStatus)
                 .HasConversion<string>()
-                .HasMaxLength(50)
+                .HasColumnType("varchar(50)")
                 .HasDefaultValue("Pending");
 
             modelBuilder.Entity<Sitting>()
                 .Property(s => s.SittingType)
                 .HasConversion<string>()
-                .HasMaxLength(50);
+                .HasColumnType("varchar(50)");
 
             modelBuilder.Entity<Table>()
                 .Property(t => t.Area)
                 .HasConversion<string>()
-                .HasMaxLength(50);
+                .HasColumnType("varchar(50)");
 
             modelBuilder.Entity<User>()
                 .Property(u => u.UserType)
                 .HasConversion<string>()
-                .HasMaxLength(50);
+                .HasColumnType("varchar(50)");
 
+            // Add explicit column types for other string properties
+            modelBuilder.Entity<Guest>()
+                .Property(g => g.FirstName)
+                .HasColumnType("varchar(50)");
+
+            modelBuilder.Entity<Guest>()
+                .Property(g => g.LastName)
+                .HasColumnType("varchar(50)");
+            
+            modelBuilder.Entity<Guest>()
+                .Property(g => g.Email)
+                .HasColumnType("varchar(255)");
+
+            modelBuilder.Entity<Guest>()
+                .Property(g => g.PhoneNumber)
+                .HasColumnType("varchar(50)");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Username)
+                .HasColumnType("varchar(255)");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.Email)
+                .HasColumnType("varchar(255)");
+
+            // Rest of your existing configurations remain the same
             // Unique constraints
             modelBuilder.Entity<Guest>()
                 .HasIndex(g => g.Email)
@@ -65,7 +115,7 @@ namespace BeanScene.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            // Relationships
+            // Relationships remain the same
             modelBuilder.Entity<Reservation>()
                 .HasOne(r => r.Guest)
                 .WithMany(g => g.Reservations)
@@ -87,7 +137,11 @@ namespace BeanScene.Data
             modelBuilder.Entity<MenuAvailability>()
                 .HasKey(ma => new { ma.ItemID, ma.SittingType });
 
-            // Configure relationship between OrderItem and ItemOption
+            modelBuilder.Entity<MenuAvailability>()
+                .HasOne(ma => ma.MenuItem)
+                .WithMany(mi => mi.Availability)
+                .HasForeignKey(ma => ma.ItemID);
+
             modelBuilder.Entity<OrderItem>()
                 .HasMany(oi => oi.SelectedOptions)
                 .WithMany(io => io.OrderItems)
@@ -105,9 +159,10 @@ namespace BeanScene.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<MenuItem>()
-                .HasMany(mi => mi.Options)
-                .WithOne(io => io.MenuItem)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasMany(mi => mi.Availability)
+                .WithOne(ma => ma.MenuItem)
+                .HasForeignKey(ma => ma.ItemID)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.MenuItem)
@@ -124,15 +179,17 @@ namespace BeanScene.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Status fields
+            // Status fields with explicit column types
             modelBuilder.Entity<Order>()
                 .Property(o => o.OrderStatus)
                 .HasConversion<string>()
+                .HasColumnType("varchar(50)")
                 .HasDefaultValue("Pending");
 
             modelBuilder.Entity<OrderItem>()
                 .Property(oi => oi.ItemStatus)
                 .HasConversion<string>()
+                .HasColumnType("varchar(50)")
                 .HasDefaultValue("Pending");
         }
     }

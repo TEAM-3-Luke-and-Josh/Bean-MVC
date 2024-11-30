@@ -15,11 +15,11 @@ namespace BeanScene.Data
             // Clear previous data
             ClearDatabase(context);
 
-            // Seed reservations
-            SeedReservations(context);
-
             // Seed menu items
             SeedMenuData(context);
+
+            // Seed reservations
+            SeedReservations(context);
 
         }
 
