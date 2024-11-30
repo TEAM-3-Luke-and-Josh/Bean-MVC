@@ -4,6 +4,7 @@ using BeanScene.Data;
 using BeanScene.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
+using BeanScene.Controllers.Api;
 
 namespace BeanScene.Controllers
 {
@@ -110,7 +111,6 @@ namespace BeanScene.Controllers
             {
                 var sitting = await _context.Sittings.FindAsync(dto.SittingId);
                 if (sitting == null) return NotFound(new { message = "Sitting not found" });
-
                 var guest = await _context.Guests
                     .FirstOrDefaultAsync(g => g.PhoneNumber == dto.PhoneNumber);
 
@@ -130,13 +130,14 @@ namespace BeanScene.Controllers
                 var reservation = new Reservation
                 {
                     GuestID = guest.GuestID,
-                    SittingID = sitting.SittingID,
+                    SittingID = dto.SittingID,
                     StartTime = dto.StartTime,
                     EndTime = dto.StartTime.AddMinutes(90),
                     NumberOfGuests = dto.NumberOfGuests,
                     ReservationStatus = "Pending",
                     Notes = dto.Notes
                 };
+                reservation.Tables.Add(table);
 
                 _context.Reservations.Add(reservation);
                 await _context.SaveChangesAsync();
@@ -275,12 +276,10 @@ namespace BeanScene.Controllers
         }
     }
 
-
-
     public class ReservationCreateDto
     {
         [Required]
-        public int SittingId { get; set; }
+        public int SittingID { get; set; }
 
         [Required]
         public DateTime StartTime { get; set; }
@@ -304,11 +303,15 @@ namespace BeanScene.Controllers
         public string Email { get; set; } = default!;
 
         public string Notes { get; set; } = default!;
+        [Required]
+        public string TableID { get; set; } = default!;
     }
 
     public class ReservationUpdateDto
     {
+        public int ReservationID { get; set; }
         public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public int NumberOfGuests { get; set; }
         public string ReservationStatus { get; set; } = default!;
         public string FirstName { get; set; } = default!;
@@ -316,6 +319,8 @@ namespace BeanScene.Controllers
         public string PhoneNumber { get; set; } = default!;
         public string Email { get; set; } = default!;
         public string Notes { get; set; } = default!;
+        public int SittingID { get; set; }
+
     }
 
     public class ReservationResponseDto
@@ -327,6 +332,8 @@ namespace BeanScene.Controllers
         public string ReservationStatus { get; set; } = default!;
         public string Notes { get; set; } = default!;
         public GuestDto Guest { get; set; } = default!;
+        public int SittingID { get; set; }
+        public List<string> TableIDs { get; set; } = new();
     }
 
     public class GuestDto
