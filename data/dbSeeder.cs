@@ -141,15 +141,16 @@ namespace BeanScene.Data
             context.Tables.AddRange(tables);
             context.SaveChanges();
 
-            // 3. Seed Sittings for next 14 days
+            // 3. Seed Sittings for next 6 months.
             var sittings = new List<Sitting>();
             var today = DateTime.Today;
+            var numberOfDays = 180; // 6 months
 
-            for (int day = 0; day < 14; day++)
+            for (int day = 0; day < numberOfDays; day++)
             {
                 var currentDate = today.AddDays(day);
                 var isWeekend = currentDate.DayOfWeek == DayOfWeek.Saturday || 
-                               currentDate.DayOfWeek == DayOfWeek.Sunday;
+                                currentDate.DayOfWeek == DayOfWeek.Sunday;
 
                 // Breakfast Sitting (7 AM - 11 AM)
                 sittings.Add(new Sitting
