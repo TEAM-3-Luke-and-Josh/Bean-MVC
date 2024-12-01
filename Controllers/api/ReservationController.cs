@@ -64,12 +64,10 @@ namespace BeanScene.Controllers
         [HttpGet("date/{date}")]
         public async Task<ActionResult<IEnumerable<object>>> GetReservationsByDate(DateTime date)
         {
-            try
-            {
+            try {
                 var sydneyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Sydney");
-                var sydneyDate = TimeZoneInfo.ConvertTimeFromUtc(date.ToUniversalTime(), sydneyTimeZone);
-                var startOfDay = sydneyDate.Date;
-                var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+                var startOfDay = TimeZoneInfo.ConvertTimeFromUtc(date.ToUniversalTime(), sydneyTimeZone).Date;
+                var endOfDay = startOfDay.AddDays(1).AddSeconds(-1);
 
                 var reservations = await _context.Reservations
                     .Include(r => r.Guest)
@@ -127,17 +125,29 @@ namespace BeanScene.Controllers
                     await _context.SaveChangesAsync();
                 }
 
+                var sydneyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Sydney");
+                var sydneyTime = TimeZoneInfo.ConvertTimeFromUtc(dto.StartTime.ToUniversalTime(), sydneyTimeZone);
+
                 var reservation = new Reservation
                 {
                     GuestID = guest.GuestID,
-                    SittingID = dto.SittingID,
-                    StartTime = dto.StartTime,
-                    EndTime = dto.StartTime.AddMinutes(90),
+                    SittingID = sitting.SittingID,
+                    StartTime = sydneyTime,
+                    EndTime = sydneyTime.AddMinutes(90),
+
                     NumberOfGuests = dto.NumberOfGuests,
                     ReservationStatus = "Pending",
                     Notes = dto.Notes
                 };
                 reservation.Tables.Add(table);
+
+                if (dto.Tables != null && dto.Tables.Any())
+                {
+                    var tables = await _context.Tables
+                        .Where(t => dto.Tables.Contains(t.TableID))
+                        .ToListAsync();
+                    reservation.Tables = tables;
+                }
 
                 _context.Reservations.Add(reservation);
                 await _context.SaveChangesAsync();
@@ -303,8 +313,8 @@ namespace BeanScene.Controllers
         public string Email { get; set; } = default!;
 
         public string Notes { get; set; } = default!;
-        [Required]
-        public string TableID { get; set; } = default!;
+        public List<string> Tables { get; set; } = new();
+
     }
 
     public class ReservationUpdateDto
