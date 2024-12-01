@@ -122,6 +122,61 @@ namespace BeanScene.Controllers.Api
             }
         }
 
+        // GET: api/orders/date/2024-03-20
+        [HttpGet("date/{date}")]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByDate(DateTime date)
+        {
+            try
+            {
+                var sydneyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Sydney");
+                var sydneyDate = TimeZoneInfo.ConvertTimeFromUtc(date.ToUniversalTime(), sydneyTimeZone);
+                var startOfDay = sydneyDate.Date;
+                var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+
+                var orders = await _context.Orders
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.MenuItem)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.SelectedOptions)
+                    .Where(o => o.OrderTime >= startOfDay && o.OrderTime <= endOfDay)
+                    .Select(o => new OrderDto
+                    {
+                        OrderID = o.OrderID,
+                        ReservationID = o.ReservationID,
+                        TableID = o.TableID,
+                        OrderStatus = o.OrderStatus,
+                        OrderTime = o.OrderTime,
+                        SpecialRequests = o.SpecialRequests,
+                        TotalAmount = o.TotalAmount,
+                        Items = o.OrderItems.Select(oi => new OrderItemDto
+                        {
+                            OrderItemID = oi.OrderItemID,
+                            ItemID = oi.ItemID,
+                            ItemName = oi.MenuItem.Name,
+                            Quantity = oi.Quantity,
+                            UnitPrice = oi.UnitPrice,
+                            Subtotal = oi.Subtotal,
+                            SpecialInstructions = oi.SpecialInstructions,
+                            ItemStatus = oi.ItemStatus,
+                            SelectedOptions = oi.SelectedOptions.Select(so => new SelectedOptionDto
+                            {
+                                OptionID = so.OptionID,
+                                Name = so.Name,
+                                PriceModifier = so.PriceModifier
+                            }).ToList()
+                        }).ToList()
+                    })
+                    .ToListAsync();
+
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving orders for date");
+                return StatusCode(500, new { message = "Error retrieving orders" });
+            }
+        }
+
         // POST: api/orders
         [HttpPost]
         public async Task<ActionResult<OrderDto>> CreateOrder(CreateOrderDto orderDto)
