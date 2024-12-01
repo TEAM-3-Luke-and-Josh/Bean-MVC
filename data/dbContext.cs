@@ -142,6 +142,12 @@ namespace BeanScene.Data
                 .WithMany(mi => mi.Availability)
                 .HasForeignKey(ma => ma.ItemID);
 
+            modelBuilder.Entity<ItemOption>()
+                .HasOne(io => io.MenuItem)
+                .WithMany(mi => mi.Options)
+                .HasForeignKey(io => io.ItemID)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<OrderItem>()
                 .HasMany(oi => oi.SelectedOptions)
                 .WithMany(io => io.OrderItems)

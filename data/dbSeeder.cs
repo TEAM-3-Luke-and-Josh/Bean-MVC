@@ -25,16 +25,40 @@ namespace BeanScene.Data
 
         private static void ClearDatabase(BeanSceneContext context)
         {
-            // Clear the data in the reverse order of dependencies
-            context.Reservations.RemoveRange(context.Reservations);
-            context.Sittings.RemoveRange(context.Sittings);
-            context.Guests.RemoveRange(context.Guests);
-            context.Tables.RemoveRange(context.Tables);
-            context.Users.RemoveRange(context.Users);
+            // Clear orders first
+            var orderItems = context.OrderItems.ToList();
+            var orders = context.Orders.ToList();
+            
+            context.OrderItems.RemoveRange(orderItems);
+            context.Orders.RemoveRange(orders);
+            context.SaveChanges();
 
+            // Then clear menu-related items
+            var menuAvailability = context.MenuAvailability.ToList();
+            var itemOptions = context.ItemOptions.ToList();
+            var menuItems = context.MenuItems.ToList();
+            var menuCategories = context.MenuCategories.ToList();
+
+            context.MenuAvailability.RemoveRange(menuAvailability);
+            context.ItemOptions.RemoveRange(itemOptions);
+            context.MenuItems.RemoveRange(menuItems);
+            context.MenuCategories.RemoveRange(menuCategories);
+            context.SaveChanges();
+
+            // Clear remaining entities
+            var reservations = context.Reservations.ToList();
+            var sittings = context.Sittings.ToList();
+            var guests = context.Guests.ToList();
+            var tables = context.Tables.ToList();
+            var users = context.Users.ToList();
+
+            context.Reservations.RemoveRange(reservations);
+            context.Sittings.RemoveRange(sittings);
+            context.Guests.RemoveRange(guests);
+            context.Tables.RemoveRange(tables);
+            context.Users.RemoveRange(users);
             context.SaveChanges();
         }
-
         public static void SeedReservations(BeanSceneContext context)
         {
 
